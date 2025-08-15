@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PC Receiver</title>
+  <script src="https://cdn.socket.io/4.7.1/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>Аудио поток</h1>
+  
+  <script>
+    const socket = io();
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    
+    socket.on('audio-stream', (audioData) => {
+      const buffer = audioContext.createBuffer(1, audioData.length, audioContext.sampleRate);
+      buffer.getChannelData(0).set(new Float32Array(audioData));
+      
+      const source = audioContext.createBufferSource();
+      source.buffer = buffer;
+      source.connect(audioContext.destination);
+      source.start();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mobile Mic</title>
+  <script src="https://cdn.socket.io/4.7.1/socket.io.min.js"></script>
+</head>
+<body>
+  <button id="start">Start Microphone</button>
+  
+  <script>
+    document.getElementById('start').addEventListener('click', async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const socket = io();
+        
+        const audioContext = new AudioContext();
+        const source = audioContext.createMediaStreamSource(stream);
+        const processor = audioContext.createScriptProcessor(1024, 1, 1);
+        
+        source.connect(processor);
+        processor.connect(audioContext.destination);
+        
+        processor.onaudioprocess = (e) => {
+          const audioData = e.inputBuffer.getChannelData(0);
+          socket.emit('audio', Array.from(audioData));
+        };
+        
+        alert('Микрофон активирован!');
+      } catch (error) {
+        console.error('Ошибка доступа к микрофону:', error);
+        alert('Ошибка: ' + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
